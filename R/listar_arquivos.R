@@ -16,7 +16,24 @@ for (i in seq_along(dirs_estoque)) {
   }
 }
 
-lista_estoque_curta = lista_estoque[1:7]
+lista_estoque_excel = caminhos_estoque[1:7]
+lista_estoque_txt = caminhos_estoque[8:12]
 
+data_excel = lapply(unlist(lista_estoque_excel), function(x) {
 
-lapply(lista_estoque, cat)
+  readxl::read_excel(x)
+})
+
+data_txt = lapply(unlist(lista_estoque_txt), function(x) {
+
+  gc()
+  readr::read_delim(x, "\t", locale = locale(encoding = "LATIN1")) %>%
+    filter(`Status com Assessoria` == "Encaminhado") %>%
+    mutate(`Mínimo p/ Recebimento GERAL` = as.numeric(gsub(",", ".", gsub("\\.", "", `Mínimo p/ Recebimento GERAL`)))) %>%
+    group_by(Assessoria) %>%
+    summarise(qtd_contratos = n(),
+              media_saldo = mean(`Mínimo p/ Recebimento GERAL`))
+
+})
+
+data = append(data_excel, data_txt)
