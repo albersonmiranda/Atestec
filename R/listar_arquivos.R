@@ -37,3 +37,23 @@ data_txt = lapply(unlist(lista_estoque_txt), function(x) {
 })
 
 data = append(data_excel, data_txt)
+
+# 12/2015 tem um Excel com os dados da extração completa e deve ser tratado como um .txt
+# Descobrir qual índice e executar o código abaixo (antes ficava no 86, mas tabelas serão deletadas)
+
+data[[86]] = data[[86]] %>%
+  filter(`Status com Assessoria` == "Encaminhado") %>%
+  mutate(`Mínimo p/ Recebimento GERAL` = as.numeric(gsub(",", ".", gsub("\\.", "", `Mínimo p/ Recebimento GERAL`)))) %>%
+  group_by(Assessoria) %>%
+  summarise(qtd_contratos = n(),
+            media_saldo = mean(`Mínimo p/ Recebimento GERAL`))
+
+
+teste = lapply(data[10:11], function(x) {
+
+  x %>%
+    filter(`Situação` == "Ativa") %>%
+    mutate(media_saldo = `Valor Total` / `Qtd. Total de Dívidas`) %>%
+    select(Assessoria, "qtd_contratos" = `Qtd. Total de Dívidas`, media_saldo)
+
+})
